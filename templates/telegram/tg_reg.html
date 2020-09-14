@@ -1,0 +1,14 @@
+{% extends "_base_focus.html" %}
+{% load i18n %}
+
+{% block content %}
+  
+  <h4>{% block title %}{% trans "Secret Code: " %} {{ scode }} {% endblock %}</h3>
+  
+  <p>{% blocktrans trimmed %} Use these simple code to create an account in our Telegram Bot. 
+                              Just paste this numbers in chat with <code>@cloudstorate_bot</code> and click on the "Verify" button. {% endblocktrans %}</p>
+  
+  <p><a href="{{ tg_reg  }}"     class="btn btn-block btn-default">{% trans "Generate code" %}</a></p>
+  <p><a href="{{ verify_url }}"  class="btn btn-block btn-default">{% trans "Verify" %}</a></p>
+  
+{% endblock %}

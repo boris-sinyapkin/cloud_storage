@@ -1,0 +1,1 @@
+ssh -i boris_ssh.pem boris@study-web.germanywestcentral.cloudapp.azure.com

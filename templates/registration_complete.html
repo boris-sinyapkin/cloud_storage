@@ -1,0 +1,8 @@
+{% extends "_base_focus.html" %}
+{% load i18n %}
+
+{% block content %}
+  <h1>{% block title %}{% trans "Registration in Telegram Bot" %}{% endblock %}</h1>
+  <p>{% blocktrans trimmed %} Next step is to create an account in out Telegram Bot (@cloudstorage_bot). To continue, please, click on the button below. {% endblocktrans %}</p>
+  <p><a href="{{ tg_reg }}" class="btn btn-block btn-default">{% trans "Register in Telegram Bot" %}</a></p>
+{% endblock %}

@@ -41,7 +41,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'tg',
-    'filestorage'
+    'filestorage',
+    'web_project'
 ]
 
 MIDDLEWARE = [
@@ -84,23 +85,32 @@ TELEGRAM_BASE_URL = '/telegram'
 LOGOUT_REDIRECT_URL = ''
 LOGIN_REDIRECT_URL  = TELEGRAM_BASE_URL + '/auth'
 
-FILESERVER_URL = "http://127.0.0.1:8001"
+FILESERVER_URL      = "http://127.0.0.1:8001"
+FILE_STORAGE_PATH   = BASE_DIR / Path('storage/')
 
 # Database
 # https://docs.djangoproject.com/en/3.1/ref/settings/#databases
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': str(BASE_DIR / 'db.sqlite3'),
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'webdb',
+        'USER': 'myuser',
+        'PASSWORD': 'mypass',
+        'HOST': 'localhost',
+        'PORT': '5432',
     }
+    # 'default': {
+    #     'ENGINE': 'django.db.backends.sqlite3',
+    #     'NAME': str(BASE_DIR / 'db.sqlite3'),
+    # }
 }
 
 
 # Password validation
 # https://docs.djangoproject.com/en/3.1/ref/settings/#auth-password-validators
 
-AUTH_USER_MODEL  = "tg.UserProfile"
+AUTH_USER_MODEL  = "web_project.UserProfile"
 
 AUTH_PASSWORD_VALIDATORS = [
     {

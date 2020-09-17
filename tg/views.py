@@ -2,9 +2,9 @@ import random
 import httpx
 import json
 
-from hashlib                      import sha256
+from hashlib                      import sha256, md5
 from django.conf                  import settings
-from .models                      import UserProfile
+from web_project.models           import UserProfile
 from django.http                  import HttpResponse, HttpResponseRedirect, HttpRequest, HttpResponseForbidden, HttpResponseBadRequest
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic         import FormView, TemplateView
@@ -12,6 +12,8 @@ from django                       import forms
 from django.shortcuts             import redirect, resolve_url, render
 from django.contrib.auth          import authenticate, login
 from collections                  import namedtuple
+
+from filestorage.cryptoweb        import CryptoWeb
 
 def int_to_bytes(x: int) -> bytes:
     return x.to_bytes((x.bit_length() + 7) // 8, 'big')
@@ -67,7 +69,14 @@ def TgRequestHandler(request : HttpRequest, op : str):
         # Verify, if redirection is needed
         if status_value == 'verify':
             if verify_scode(user.username, int(request.GET['scode'])) == True:
-                UserProfile.objects.create(username=user.username, password=user.password, is_superuser=False)
+
+                # Create user object
+                new_user = UserProfile.objects.create( username=user.username, password=user.password, is_superuser=False )
+
+                # Create root directory
+                CryptoWeb.mkroot(new_user.id)
+
+                # Delete cookies and redirect to login page
                 http_response = redirect('login')
                 http_response.delete_cookie('user')
                 return http_response
@@ -127,7 +136,10 @@ class TgAuthView(FormView):
         if auth_response.status_code == httpx.codes.OK and \
             int_to_hashstr(form.save()) == json.loads(auth_response.content.decode()).get('secret_code'):
 
+            # Sign in 
             login(self.request, user)
+
+            # Redirect to homepage
             http_response = redirect('home')
 
         else:

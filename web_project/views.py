@@ -5,7 +5,7 @@ from django.views.generic         import FormView, TemplateView
 from django.contrib.auth.forms    import UserCreationForm, AuthenticationForm
 from django.contrib.auth          import logout, get_user_model, login
 from django.shortcuts             import redirect, resolve_url
-from tg.models                    import UserProfile
+from .models                    import UserProfile
 
 import httpx
 import json
@@ -69,6 +69,5 @@ class LoginView(FormView):
             return response
 
 def LogoutHandler(request):
-    if request.user.is_authenticated:
-        logout(request)
+    logout(request)
     return HttpResponseRedirect(resolve_url('home'))

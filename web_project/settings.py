@@ -84,6 +84,8 @@ TELEGRAM_BASE_URL = '/telegram'
 LOGOUT_REDIRECT_URL = ''
 LOGIN_REDIRECT_URL  = TELEGRAM_BASE_URL + '/auth'
 
+FILESERVER_URL = "http://127.0.0.1:8001"
+
 # Database
 # https://docs.djangoproject.com/en/3.1/ref/settings/#databases
 

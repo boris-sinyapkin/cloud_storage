@@ -10,6 +10,8 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.generic         import FormView, TemplateView
 from django                       import forms
 from django.shortcuts             import redirect, resolve_url, render
+from django.contrib.auth          import authenticate, login
+from collections                  import namedtuple
 
 def int_to_bytes(x: int) -> bytes:
     return x.to_bytes((x.bit_length() + 7) // 8, 'big')
@@ -37,21 +39,21 @@ def verify_scode(username, scode : int) -> bool:
 
     return json.loads(response.content.decode()).get('status')
 
-def is_telegram_authenticated(user) -> bool:
-    try:
-        if user.is_authenticated == True and user.is_telegram_auth == True:
-            return True
-        else:
-            return False
-    except AttributeError:
-        return False
-
 def try_to_get_current_user(request):
+    user_cookie = request.COOKIES.get('user') 
+    if user_cookie is not None:
+        user_dict  = json.loads(user_cookie)
+        UserCookie = namedtuple('UserCookie', 'username password')
+        return UserCookie(user_dict['username'], user_dict['password'])
+    else:
+        return None
+
+def find_user_in_database(request):
     try:
-        return UserProfile.objects.get(username=request.user.username)
+        return UserProfile.objects.get(username=request.user.username) if request.user else None
     except:
         return None
-    
+
 @csrf_exempt
 def TgRequestHandler(request : HttpRequest, op : str):
 
@@ -65,7 +67,10 @@ def TgRequestHandler(request : HttpRequest, op : str):
         # Verify, if redirection is needed
         if status_value == 'verify':
             if verify_scode(user.username, int(request.GET['scode'])) == True:
-                return redirect('login')
+                UserProfile.objects.create(username=user.username, password=user.password, is_superuser=False)
+                http_response = redirect('login')
+                http_response.delete_cookie('user')
+                return http_response
             else:
                 return HttpResponseForbidden("Telegram Registration Failure")
             
@@ -77,6 +82,14 @@ def TgRequestHandler(request : HttpRequest, op : str):
 # Create your views here.
 class TgRegistrationView(TemplateView):
     template_name = 'telegram/tg_reg.html'
+
+    def get(self, request, *args, **kwargs):
+        if request.COOKIES.get('user') is not None:
+            context = self.get_context_data(**kwargs)
+            response = self.render_to_response(context)
+        else:
+            response = HttpResponseForbidden()
+        return response
         
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -94,28 +107,39 @@ class TgAuthView(FormView):
     template_name = 'telegram/tg_auth.html'
     form_class    = TgAuthForm
 
+    def get(self, request, *args, **kwargs):
+        if request.COOKIES.get('signup-login') is not None:
+            context = self.get_context_data(**kwargs)
+            response = self.render_to_response(context)
+        else:
+            response = HttpResponseForbidden()
+        return response
+
     def form_valid(self, form):
-        user = try_to_get_current_user(self.request)
+        user = UserProfile.objects.get(username=self.request.COOKIES.get('signup-login'))
 
         if user is None:
             return HttpResponseForbiddenTg()
-        
+
         # Request to Telegram Bot
-        auth_response = httpx.get(settings.TELEGRAM_BOT_URL + "/auth_req")
+        auth_response = httpx.get(settings.TELEGRAM_BOT_URL + f"/auth_req?login={user.username}")
 
-        if int_to_hashstr(form.save()) == json.loads(auth_response.content.decode()).get('secret_code'):
-            # Set up Telegram auth flag nad redirect to home page
-            user.is_telegram_auth = True
-            user.save()
+        if auth_response.status_code == httpx.codes.OK and \
+            int_to_hashstr(form.save()) == json.loads(auth_response.content.decode()).get('secret_code'):
+
+            login(self.request, user)
+            http_response = redirect('home')
+
         else:
-            return HttpResponseForbidden("Telegram authentication failure")
-
-        return redirect('home')
+            http_response = HttpResponseForbidden("Telegram authentication failure")
+        
+        http_response.delete_cookie('signup-login')
+        return http_response
 
 def TgSecretCodeRequest(request):
-    user = try_to_get_current_user(request)
+    user = find_user_in_database(request)
 
-    if user is None:
+    if user is None or request.COOKIES.get('signup-login') is None:
         return HttpResponseForbiddenTg()
 
     response = httpx.get(settings.TELEGRAM_BOT_URL + GENCODE_REQUEST_URL, 

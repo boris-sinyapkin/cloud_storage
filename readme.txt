@@ -20,4 +20,4 @@
 # User      -> click verify button on WEB
 # WEB       -> send generated secret code hash      -> Telegram   Method: GET URL: TELEGRAM_BOT_URL/reg, json={ 'login' : ..., 'secret_code' : ... }
 # Telegram  -> verify secret codes (WEB vs User)                  Response: { 'status' : True / False }                                
-#
+# 

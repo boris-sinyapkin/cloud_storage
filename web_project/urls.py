@@ -14,18 +14,18 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib            import admin
-from django.urls               import path, include
+from django.urls               import path, include, re_path
 from django.views.generic.base import TemplateView
 
-from .views import ( RegistrationView, RegistrationCompleteView, HomePageView, LogoutHandler )
+from .views import ( RegistrationView, RegistrationCompleteView, HomePageView, LogoutHandler, LoginView )
 
 urlpatterns = [
-    path('admin/',                              admin.site.urls                                                         ),   
-    path('accounts/logout/',                    LogoutHandler                                                           ),
-    path('accounts/',                           include('django.contrib.auth.urls')                                     ),
-    path('accounts/register/',                  RegistrationView.as_view(),             name='registration',            ),
-    path('accounts/register/done/',             RegistrationCompleteView.as_view(),     name='registration_complete',   ),
-    path('telegram/',                           include('tg.urls')                                                      ),
-    path('filestorage/',                        include('filestorage.urls')                                             ),
-    path('',                                    HomePageView.as_view(),                 name='home'                     ),
+    path('admin/',                        admin.site.urls                                                         ),   
+    path('accounts/logout/',              LogoutHandler,                          name='logout'                   ),
+    path('accounts/login/',               LoginView.as_view(),                    name='login'                    ),
+    path('accounts/register/',            RegistrationView.as_view(),             name='registration',            ),
+    path('accounts/register/done/',       RegistrationCompleteView.as_view(),     name='registration_complete',   ),
+    path('telegram/',                     include('tg.urls')                                                      ),
+    path('filestorage/',                  include('filestorage.urls')                                             ),
+    path('',                              HomePageView.as_view(),                 name='home'                     ),
 ]

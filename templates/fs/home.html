@@ -18,10 +18,11 @@
     {% endif %}
 
     <!-- Upload form.-->
-    <form  method="post" enctype="multipart/form-data">
+    <form action="file/upload" method="post" enctype="multipart/form-data">
       {% csrf_token %}
       <input type="file" name="myfile">
       <input type="submit" value="Upload"/></p>
+      <input type="hidden" name="cur_dir" value="{{ request.path }}">
     </form>
 
     <!-- Create directory.-->

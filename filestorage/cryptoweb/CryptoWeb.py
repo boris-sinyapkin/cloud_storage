@@ -52,6 +52,18 @@ def tree(uid):
             result_sub_tree[fname] = 'file'
     return result_tree
 
+def what_is_it(uid, path):
+    fpath, fname = os.path.split(path)
+    try:
+        file_obj = FileTable.objects.get( 
+            _uid=UserProfile.objects.get(id=uid), 
+            _name=fname, 
+            _path=fpath)
+    except:
+        return None
+
+    return file_obj._type if file_obj is not None else None
+
 def not_exists(uid, filename, ftype = None):
     fpath, fname = os.path.split(filename)
     postgres_select_query = "SELECT _uid_id FROM web_project_filetable "\
@@ -74,9 +86,10 @@ def not_exists(uid, filename, ftype = None):
 def uploaded(uid, filename): #(uid, fpath, fname)
     #filename = fpath + fname
     part_name = str(SHA256.new(bytes(str(uid) + filename, 'utf-8')).hexdigest())
+    serv_path = STORAGE_PATH / Path(str(uid)) / Path(part_name)
     tmpprint('check uploaded:', uid, filename, ':')
-    tmpprint('  [vv]', os.path.exists(STORAGE_PATH + str(uid) + '/' + part_name))
-    return os.path.exists(STORAGE_PATH + str(uid) + '/' + part_name)
+    tmpprint('  [vv]', os.path.exists(serv_path))
+    return serv_path.exists()
 
 def mkroot(uid):
 
@@ -169,7 +182,9 @@ def download(uid, key, filename) -> bytes:
     first_part_index = SHA256.new(bytes(str(uid) + filename, 'utf-8')).digest()
     part_name = first_part_index.hex()
 
-    if (not os.path.exists(STORAGE_PATH + str(uid) + '/' + part_name)):
+    USER_ROOT_PATH = STORAGE_PATH / Path(str(uid))
+
+    if not (USER_ROOT_PATH / Path(part_name)).exists():
         tmpprint(' ', str(uid) + filename, 'No such file')
         return None
 
@@ -179,7 +194,7 @@ def download(uid, key, filename) -> bytes:
         tmpprint('  [<-]:', part_name)
 
         try:
-            part_file = open(STORAGE_PATH + str(uid) + '/' + part_name, 'rb')
+            part_file = (USER_ROOT_PATH / Path(part_name)).open('rb')
         except:
             tmpprint('  Incorrect Key')
             return None

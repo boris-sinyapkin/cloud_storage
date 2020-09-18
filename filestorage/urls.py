@@ -17,8 +17,9 @@ from django.contrib            import admin
 from django.urls               import path, include, re_path
 from django.views.generic.base import TemplateView
 
-from .views import ( show_files )
+from .views import ( ShowFilesHandler, FileHandler )
 
 urlpatterns = [
-    re_path(r'(?P<path>.*)', show_files, name="fs_home"),
+    re_path(r'file/(?P<method>.*)', FileHandler,      name="fs_handler"),
+    re_path(r'(?P<path>.*)',        ShowFilesHandler, name="fs_home"),
 ]

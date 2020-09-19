@@ -1,13 +1,13 @@
-from django.shortcuts       import render, redirect
-from django.views.generic   import FormView, TemplateView
-from django.conf            import settings
-from django.http            import HttpResponse, HttpResponseForbidden, HttpResponseRedirect, StreamingHttpResponse, HttpResponseBadRequest
+from django.shortcuts                  import render, redirect
+from django.views.generic              import FormView, TemplateView
+from django.conf                       import settings
+from django.http                       import HttpResponse, HttpResponseForbidden, HttpResponseRedirect, StreamingHttpResponse, HttpResponseBadRequest
+from django.contrib.auth.decorators    import login_required
 
 from web_project.models     import UserProfile
 from django.utils.text      import slugify
 from itertools              import dropwhile
 from io                     import BytesIO
-
 
 import httpx
 import json
@@ -21,7 +21,7 @@ def get_user_key(user : UserProfile) -> bytes:
 def get_user_object(request):
     try:
         if request.user:
-            return UserProfile.objects.get(username='sinyap')
+            return UserProfile.objects.get(username=request.user.username)
     except:
         return None
 
@@ -32,6 +32,7 @@ def normalize_path(path):
     path = path.replace('/filestorage', '')
     return '/' + '/'.join([ p for p in path.split('/') if p != '' ])
 
+@login_required
 def ShowFilesHandler(request, path : str):
     user = get_user_object(request)
     if user is None:
@@ -54,6 +55,7 @@ def ShowFilesHandler(request, path : str):
     
     return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
+@login_required
 def FileHandler(request, method):
     user = get_user_object(request)
     if user is None:

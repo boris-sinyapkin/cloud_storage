@@ -85,7 +85,6 @@ TELEGRAM_BASE_URL = '/telegram'
 LOGOUT_REDIRECT_URL = ''
 LOGIN_REDIRECT_URL  = TELEGRAM_BASE_URL + '/auth'
 
-FILESERVER_URL      = "http://127.0.0.1:8001"
 FILE_STORAGE_PATH   = BASE_DIR / Path('storage/')
 
 # Database

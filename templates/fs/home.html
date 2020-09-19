@@ -44,11 +44,13 @@
       <input type="text"   name="new_dir_name">
       <input type="hidden" name="cur_dir" value="{{ request.path }}">
     </form>
+    <br>
     <!-- Upload form.-->
     <form action="file/upload" method="post" enctype="multipart/form-data">
       {% csrf_token %}
       <div class="btn-group">
         <input type="file" name="myfile">
+        <br>
         <input type="submit" value="Upload"/>
       </div>
       <input type="hidden" name="cur_dir" value="{{ request.path }}">

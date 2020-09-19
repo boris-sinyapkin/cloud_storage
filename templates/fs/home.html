@@ -1,30 +1,42 @@
-{% extends '../base.html' %}
+{% extends 'base.html' %}
 
 {% block content %}
+
+<head>
+    <style type="text/css">
+        table {
+            border-collapse: collapse;
+            font-family: "Consolas";
+            text-align: center;
+            margin-bottom: 1em;
+            margin-top: 5em;
+        }
+        
+        h4 {
+            font-family: Consolas;
+        }
+        
+        table th {
+            background: #aaacaa;
+            text-align: center;
+        }
+        
+        .border {
+            border: 1px solid rgb(0, 0, 0);
+        }
+        
+        .buttons {
+            border: none;
+        }
+    </style>
+</head>
+
 <div class="container">
 <div class="row">
 
-<div class="jumbotron">
+<div class="container">
     <!-- List of files on server in current directory -->
-    <h4> Current directory: {{ cur_dir }} </h5>
-    {% if files %}
-      <ul>
-          {% for file in files %}
-              <li><a href="{{ request.path }}/{{ file }}">{{ file }}</a></li>
-          {% endfor %}
-      </ul>
-    {% else %}
-      <p>No files in current directory</p>
-    {% endif %}
-
-    <!-- Upload form.-->
-    <form action="file/upload" method="post" enctype="multipart/form-data">
-      {% csrf_token %}
-      <input type="file" name="myfile">
-      <input type="submit" value="Upload"/></p>
-      <input type="hidden" name="cur_dir" value="{{ request.path }}">
-    </form>
-
+    <h4 style="font-weight:bold"> Current directory: {{ cur_dir }} </h4>
     <!-- Create directory.-->
     <form action="file/mkdir" method="post">
       {% csrf_token %}
@@ -32,6 +44,60 @@
       <input type="text"   name="new_dir_name">
       <input type="hidden" name="cur_dir" value="{{ request.path }}">
     </form>
+    <!-- Upload form.-->
+    <form action="file/upload" method="post" enctype="multipart/form-data">
+      {% csrf_token %}
+      <div class="btn-group">
+        <input type="file" name="myfile">
+        <input type="submit" value="Upload"/>
+      </div>
+      <input type="hidden" name="cur_dir" value="{{ request.path }}">
+    </form>
+    <!-- File Table-->
+    {% if files %}
+        <table align="center" width="100%" >
+        <thead>
+            <tr class="border">  
+                <th class="border"> Filename </th>
+                <th class="border"> Type     </th>
+                <th class="border"> Baseline </th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for filename, info in files.items %}
+            <tr>
+                <td class="border"><a href="{{ request.path }}{{ filename }}/">{{ filename }}</a></td>
+                <td class="border">{% if info.type == 'd' %} Directory {% else %} File {% endif %}</td>
+                <td class="border">{{ info.baseline }}</td>
+                <td class="buttons">
+                  {% if info.type == 'd' %}
+                  <form action="/filestorage/file/download" method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <input type="submit" value="Download ZIP"/>
+                    <input type="hidden" name="filepath" value="{{ request.path }}{{ filename }}/">
+                  </form>
+                  {% else %}
+                  {% endif %}
+                </td>
+                <td class="buttons">
+                  <form action="/filestorage/file/remove" method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <input type="submit" value="Remove"/>
+                    <input type="hidden" name="filepath" value="{{ request.path }}{{ filename }}/">
+                  </form>
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+        </table>
+      
+    {% else %}
+    <table align="center" width="50%">
+    <caption style="font-weight:bold"> No files in current directory </caption>
+    </table>
+    {% endif %}
+
+</form>
 
 
 </div>

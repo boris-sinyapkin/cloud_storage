@@ -42,7 +42,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'tg',
     'filestorage',
-    'web_project'
+    'web_project',
 ]
 
 MIDDLEWARE = [

@@ -21,11 +21,21 @@ class RegistrationView(FormView):
     template_name = 'registration.html'
     form_class    = RegistrationForm
 
+    def get(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            context  = self.get_context_data(**kwargs)
+            response = self.render_to_response(context)
+        else:
+            response = render(request, HomePageView.template_name, { 
+                'messages' : [ f"Please, logout before new account creation"]
+            })
+        return response
+
     def form_valid(self, form):
         user    = form.save(commit=False)
         try:
             reponse = httpx.get(settings.TELEGRAM_BOT_URL + f"/new_login?login={user.username}")
-        except Exception as e:
+        except Exception:
             return render(self.request, RegistrationView.template_name, { 'form' : RegistrationView.form_class, 'messages'  : ['Telegram Bot request timeout'] } )
 
         if reponse.status_code == httpx.codes.OK:

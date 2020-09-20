@@ -70,9 +70,9 @@ def FileHandler(request, method):
                     CryptoWeb.upload(user.id, get_user_key(user), file_path, myfile.read())
                 else:
                     pass
-            elif method == "mkdir" and request.POST.get('new_dir_name'):
+            elif method == "mkdir":
                 basename = request.POST.get('new_dir_name')
-                if basename != '':
+                if basename:
                     CryptoWeb.mkdir(user.id, normalize_path(request.POST.get('cur_dir') + basename))
 
             elif method == "remove" and request.POST.get('filepath') :
@@ -80,6 +80,11 @@ def FileHandler(request, method):
                 CryptoWeb.remove(user.id, 
                                 get_user_key(user), 
                                 normalize_path(request.POST.get('filepath')))
+                                
+            elif method == "previous":
+                current_dir = normalize_path( request.POST.get('cur_dir') )
+                return redirect('/filestorage' + os.path.split(current_dir)[0])
+                
             elif not method == 'download':
                 return HttpResponseBadRequest()
 

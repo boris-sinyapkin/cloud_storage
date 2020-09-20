@@ -35,8 +35,15 @@
 <div class="row">
 
 <div class="container">
-    <!-- List of files on server in current directory -->
     <h4 style="font-weight:bold"> Current directory: {{ cur_dir }} </h4>
+    <form action="file/previous" method="post">
+      {% csrf_token %}
+      <input type="submit" value="Previous directory">
+      <input type="hidden" name="cur_dir" value="{{ request.path }}">
+    </form>
+    <br>
+    <br>
+    <br>
     <!-- Create directory.-->
     <form action="file/mkdir" method="post">
       {% csrf_token %}

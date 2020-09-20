@@ -19,10 +19,6 @@ conn = None
 #Path to main storage dir
 STORAGE_PATH = settings.FILE_STORAGE_PATH
 
-def tmpprint(*args):
-    return
-tmpprint = print
-
 def tree(uid):
     try:
         cursor = connection.cursor()
@@ -81,15 +77,15 @@ def not_exists(uid, filename, ftype = None):
     except:
         return None
 
-    tmpprint('not_exists:', uid, fpath, fname, ':', ftype)
+    
     return not cursor.fetchone()
 
 def uploaded(uid, filename): #(uid, fpath, fname)
     #filename = fpath + fname
     part_name = str(SHA256.new(bytes(str(uid) + filename, 'utf-8')).hexdigest())
     serv_path = STORAGE_PATH / Path(str(uid)) / Path(part_name)
-    tmpprint('check uploaded:', uid, filename, ':')
-    tmpprint('  [vv]', os.path.exists(serv_path))
+    
+    
     return serv_path.exists()
 
 def mkroot(uid):
@@ -125,7 +121,7 @@ def upload(uid, key, filename, fdata : bytes): #(uid, key, fpath, fname)
     USER_ROOT_PATH = STORAGE_PATH / Path(str(uid))
 
     if (USER_ROOT_PATH / Path(part_name)).exists():
-        tmpprint(' ', filename, 'Already uploaded')
+        
         return False
 
     size = len(fdata)
@@ -133,7 +129,7 @@ def upload(uid, key, filename, fdata : bytes): #(uid, key, fpath, fname)
     BYTES_IN_PART = size // part_count
 
     for i in range(0, part_count):
-        tmpprint('  [->]:', part_name)
+        
 
         data, fdata = fdata[0:BYTES_IN_PART], fdata[BYTES_IN_PART:]
         part_file = (USER_ROOT_PATH / Path(part_name)).open('wb')
@@ -191,7 +187,7 @@ def object_info(uid, filename):
 
 
 def download_file(uid, key, filename) -> bytes:
-    tmpprint('downloading:', str(uid), filename, ':')
+    
 
     iv = b'\xb7\xf8\xce\x15\x49\x24\x2b\xa1\xba\x9b\xc8\x67\x15\xc5\x37\x98'
     aes = AES.new(key, AES.MODE_EAX, iv)
@@ -202,7 +198,7 @@ def download_file(uid, key, filename) -> bytes:
     USER_ROOT_PATH = STORAGE_PATH / Path(str(uid))
 
     if not (USER_ROOT_PATH / Path(part_name)).exists():
-        tmpprint(' ', str(uid) + filename, 'No such file')
+        
         return None
 
     fdata = b''
@@ -211,7 +207,7 @@ def download_file(uid, key, filename) -> bytes:
         try:
             part_file = (USER_ROOT_PATH / Path(part_name)).open('rb')
         except:
-            tmpprint('  Incorrect Key')
+            
             return None
 
         data = part_file.read()
@@ -245,7 +241,7 @@ def download_folder(uid, key, dirpath):
     temp_folder = os.path.join(STORAGE_PATH, '~' + str(uid))
     dirpath, dirname = os.path.split(dirpath)
     load_folder = os.path.join(temp_folder, dirname)
-    tmpprint(load_folder)
+    
     os.makedirs(load_folder, exist_ok=True)
 
     if dirpath == '/':
@@ -256,7 +252,7 @@ def download_folder(uid, key, dirpath):
     for fpath, fname, ftype in rec:
         if ftype == 'd':
             dr = os.path.join(fpath[path_offset:], fname)
-            tmpprint('  foldering:', uid, dr)
+            
             os.makedirs(temp_folder + dr, exist_ok=True)
         else:
             fdata = download(uid, key, fpath + '/' + fname)
@@ -285,7 +281,7 @@ def download(uid, key, filename) -> bytes:
         return download_folder(uid, key, filename)
 
 def remove_file(uid, key, filename):
-    tmpprint('rmoving:', str(uid), filename, ':')
+    
 
     iv = b'\xb7\xf8\xce\x15\x49\x24\x2b\xa1\xba\x9b\xc8\x67\x15\xc5\x37\x98'
     aes = AES.new(key, AES.MODE_EAX, iv)
@@ -296,11 +292,11 @@ def remove_file(uid, key, filename):
     USER_ROOT_PATH = STORAGE_PATH / Path(str(uid))
 
     if not (USER_ROOT_PATH / Path(part_name)).exists():
-        tmpprint(' ', str(uid) + filename, 'No such file')
+        
         return False
 
     while True:
-        #tmpprint('  [XX]:', part_name)
+        #
         part_file = (USER_ROOT_PATH / Path(part_name)).open('rb')
         data = part_file.read()
         part_file.close()
@@ -341,7 +337,7 @@ def remove_folder(uid, key, dirname):
         if (ftype == 'f'):
             remove_file(uid, key, fpath + '/' + fname)
         else: #remove directory
-            tmpprint('rmoving:', uid, fpath + '/' + fname, ':d')
+            
             try:
                 cursor.execute( "DELETE FROM web_project_filetable "\
                                 "WHERE web_project_filetable._uid_id = %s "\
@@ -366,7 +362,7 @@ def remove_folder(uid, key, dirname):
 def remove(uid, key, filename) -> bytes:
     finfo = object_info(uid, filename)
     if not finfo: 
-        tmpprint('remove(', uid, filename, '): no such object')
+        
         return None
 
     if finfo['type'] == 'f':

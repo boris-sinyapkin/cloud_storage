@@ -71,9 +71,9 @@ def FileHandler(request, method):
                 else:
                     pass
             elif method == "mkdir" and request.POST.get('new_dir_name'):
-
-                new_dir = request.POST.get('cur_dir') + request.POST.get('new_dir_name')
-                CryptoWeb.mkdir(user.id, normalize_path(new_dir))
+                basename = request.POST.get('new_dir_name')
+                if basename != '':
+                    CryptoWeb.mkdir(user.id, normalize_path(request.POST.get('cur_dir') + basename))
 
             elif method == "remove" and request.POST.get('filepath') :
                 

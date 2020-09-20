@@ -21,3 +21,7 @@
 # WEB       -> send generated secret code hash      -> Telegram   Method: GET URL: TELEGRAM_BOT_URL/reg, json={ 'login' : ..., 'secret_code' : ... }
 # Telegram  -> verify secret codes (WEB vs User)                  Response: { 'status' : True / False }                                
 # 
+
+TODO:
+1. Кнопка перехода по страницам в хранилище
+2. Возврат назад если аутентификация не работает

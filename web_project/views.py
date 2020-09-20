@@ -4,8 +4,8 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.generic         import FormView, TemplateView
 from django.contrib.auth.forms    import UserCreationForm, AuthenticationForm
 from django.contrib.auth          import logout, get_user_model, login
-from django.shortcuts             import redirect, resolve_url
-from .models                    import UserProfile
+from django.shortcuts             import redirect, resolve_url, render
+from .models                      import UserProfile
 
 import httpx
 import json
@@ -23,7 +23,10 @@ class RegistrationView(FormView):
 
     def form_valid(self, form):
         user    = form.save(commit=False)
-        reponse = httpx.get(settings.TELEGRAM_BOT_URL + f"/new_login?login={user.username}")
+        try:
+            reponse = httpx.get(settings.TELEGRAM_BOT_URL + f"/new_login?login={user.username}")
+        except Exception as e:
+            return render(self.request, RegistrationView.template_name, { 'form' : RegistrationView.form_class, 'messages'  : ['Telegram Bot request timeout'] } )
 
         if reponse.status_code == httpx.codes.OK:
             response_redirect = HttpResponseRedirect('done/')
@@ -58,6 +61,16 @@ class LoginForm(AuthenticationForm):
 class LoginView(FormView):
     template_name = 'registration/login.html'
     form_class = LoginForm
+
+    def get(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            context  = self.get_context_data(**kwargs)
+            response = self.render_to_response(context)
+        else:
+            response = render(request, HomePageView.template_name, { 
+                'messages' : [ f"You are already authorized as {request.user.username}"]
+            })
+        return response
 
     def form_valid(self, form):
         user = form.get_user()

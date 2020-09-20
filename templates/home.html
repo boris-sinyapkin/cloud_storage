@@ -6,7 +6,7 @@
 
 {% block content %}
   <h1>{% blocktrans trimmed %}Secure Cloud File Storage {% endblocktrans %}</h1>
-  <p>{% blocktrans trimmed %}Welcome to the home page of the SecureClode server. {% endblocktrans %}</p>
+  <p>{% blocktrans trimmed %}Welcome to the home page of the SecureCloud server. {% endblocktrans %}</p>
 
   {% url 'registration' as reg_url %}
   {% url 'login'        as login_url %}
@@ -14,8 +14,7 @@
 
   <ol>
     <li>{% blocktrans trimmed %}Start by <a href="{{ reg_url }}">registering</a> an account using our Telegram bot.{% endblocktrans %}</li>
-    <li>{% blocktrans trimmed %}<a href="{{ login_url }}">Login</a> to your account.
-      {% endblocktrans %}</li>
+    <li>{% blocktrans trimmed %}<a href="{{ login_url }}">Login</a> to your account.{% endblocktrans %}</li>
     <li>{% blocktrans trimmed %} Then, store and download your files securely by using our <a href="filestorage/">service</a>. {% endblocktrans %}</li>
   </ol>
 {% endblock %}

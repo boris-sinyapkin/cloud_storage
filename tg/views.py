@@ -110,7 +110,10 @@ class TgRegistrationView(TemplateView):
 class TgAuthForm(forms.Form): 
     secret_code = forms.CharField(max_length = 200) 
     def save(self):
-        return int(self.cleaned_data['secret_code'])
+        try:
+            return int(self.cleaned_data['secret_code'])
+        except ValueError:
+            return None
 
 class TgAuthView(FormView):
     template_name = 'telegram/tg_auth.html'
@@ -125,16 +128,27 @@ class TgAuthView(FormView):
         return response
 
     def form_valid(self, form):
-        user = UserProfile.objects.get(username=self.request.COOKIES.get('signup-login'))
+        user       = UserProfile.objects.get(username=self.request.COOKIES.get('signup-login'))
+        form_scode = form.save()
 
         if user is None:
             return HttpResponseForbiddenTg()
 
+        if form_scode is None:
+            return render(self.request, TgAuthView.template_name, { 
+                'form' : TgAuthView.form_class, 
+                'messages'  : ['Invalid secret code'] } )
+
         # Request to Telegram Bot
-        auth_response = httpx.get(settings.TELEGRAM_BOT_URL + f"/auth_req?login={user.username}")
+        try:
+            auth_response = httpx.get(settings.TELEGRAM_BOT_URL + f"/auth_req?login={user.username}")
+        except Exception as e:
+            return render(self.request, TgAuthView.template_name, { 
+                'form' : TgAuthView.form_class, 
+                'messages'  : ['Telegram Bot request timeout'] } )
 
         if auth_response.status_code == httpx.codes.OK and \
-            int_to_hashstr(form.save()) == json.loads(auth_response.content.decode()).get('secret_code'):
+            int_to_hashstr(form_scode) == json.loads(auth_response.content.decode()).get('secret_code'):
 
             # Sign in 
             login(self.request, user)
@@ -148,14 +162,17 @@ class TgAuthView(FormView):
         http_response.delete_cookie('signup-login')
         return http_response
 
-def TgSecretCodeRequest(request):
-    user = find_user_in_database(request)
+def TgSecretCodeRequest(request):    
+    username = request.COOKIES.get('signup-login')
 
-    if user is None or request.COOKIES.get('signup-login') is None:
+    if username is None:
         return HttpResponseForbiddenTg()
 
-    response = httpx.get(settings.TELEGRAM_BOT_URL + GENCODE_REQUEST_URL, 
-                            params={ 'login' : str(user.username) })
+    try:
+        response = httpx.get(settings.TELEGRAM_BOT_URL + GENCODE_REQUEST_URL, params={ 'login' : str(username) })
+    except Exception as e:
+        return render(request, TgAuthView.template_name, { 'form' : TgAuthView.form_class, 'messages'  : ['Telegram Bot request timeout'] } )
+
     return \
         HttpResponseRedirect(request.META.get('HTTP_REFERER')) \
             if response.status_code == httpx.codes.OK \

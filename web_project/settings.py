@@ -26,7 +26,7 @@ SECRET_KEY = ')95ac$(l(b*2v1#sy*ioy=^rbsi%*g+g_69pvkg*qq+$!3a!0k'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [ 'study-web2.germanywestcentral.cloudapp.azure.com' ]
 
 LOGIN_REDIRECT_URL = 'home'
 LOGOUT_REDIRECT_URL = 'home'
@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'tg',
     'filestorage',
     'web_project',
+    'android'
 ]
 
 MIDDLEWARE = [
@@ -75,7 +76,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'web_project.wsgi.application'
 
-TELEGRAM_BOT_URL = "http://127.0.0.1:8001"
+TELEGRAM_BOT_URL = "http://10.0.1.5:8001"
 
 PROFILE_PAGE = '/profile'
 LOGIN_PAGE   = '/accounts/login'

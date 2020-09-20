@@ -27,5 +27,6 @@ urlpatterns = [
     path('accounts/register/done/',       RegistrationCompleteView.as_view(),     name='registration_complete',   ),
     path('telegram/',                     include('tg.urls')                                                      ),
     path('filestorage/',                  include('filestorage.urls')                                             ),
+    path('android/',                      include('android.urls')                                                 ),
     path('',                              HomePageView.as_view(),                 name='home'                     ),
 ]

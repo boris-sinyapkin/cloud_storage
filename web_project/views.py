@@ -35,12 +35,12 @@ class RegistrationView(FormView):
         user    = form.save(commit=False)
         try:
             reponse = httpx.get(settings.TELEGRAM_BOT_URL + f"/new_login?login={user.username}")
-        except Exception:
-            return render(self.request, RegistrationView.template_name, { 'form' : RegistrationView.form_class, 'messages'  : ['Telegram Bot request timeout'] } )
+        except Exception as e:
+            return render(self.request, RegistrationView.template_name, { 'form' : RegistrationView.form_class, 'messages'  : [ f"Telegram Bot: {e}" ] } )
 
         if reponse.status_code == httpx.codes.OK:
             response_redirect = HttpResponseRedirect('done/')
-            response_redirect.set_cookie('user', json.dumps({ 'username' : user.username, 'password' : user.password }), max_age = 10 * 60)
+            self.request.session['user'] = json.dumps({ 'username' : user.username, 'password' : user.password })
             return response_redirect
         else:
             return HttpResponseBadRequest("Bad new login request to Telegram Bot")
@@ -49,7 +49,7 @@ class RegistrationCompleteView(TemplateView):
     template_name = 'registration_complete.html'
 
     def get(self, request, *args, **kwargs):
-        if request.COOKIES.get('user') is not None:
+        if request.session.get('user') is not None:
             context  = self.get_context_data(**kwargs)
             response = self.render_to_response(context)
         else:
@@ -88,7 +88,7 @@ class LoginView(FormView):
             return HttpResponseBadRequest()
         else:
             response = redirect('/telegram/auth')
-            response.set_cookie('signup-login', user.username, max_age = 5 * 60)
+            self.request.session['signup-login'] = user.username
             return response
 
 def LogoutHandler(request):

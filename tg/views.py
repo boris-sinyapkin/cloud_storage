@@ -28,6 +28,12 @@ AUTH_REQUEST_URL    = '/auth_req'
 REG_REQUEST_URL     = '/reg'
 GENCODE_REQUEST_URL = '/code_gen'
 
+def clear_session_item(request, name : str):
+    try:
+        del request.session[name]
+    except KeyError:
+        pass
+
 def HttpResponseForbiddenTg():
     return HttpResponseForbidden("You are not authorized on the server. \
                 Firstly use your credentials to sign-in on the home page and then you \
@@ -42,7 +48,7 @@ def verify_scode(username, scode : int) -> bool:
     return json.loads(response.content.decode()).get('status')
 
 def try_to_get_current_user(request):
-    user_cookie = request.COOKIES.get('user') 
+    user_cookie = request.session.get('user') 
     if user_cookie is not None:
         user_dict  = json.loads(user_cookie)
         UserCookie = namedtuple('UserCookie', 'username password')
@@ -76,12 +82,13 @@ def TgRequestHandler(request : HttpRequest, op : str):
                 # Create root directory
                 CryptoWeb.mkroot(new_user.id)
 
-                # Delete cookies and redirect to login page
+                # Delete session item and redirect to login page
                 http_response = redirect('login')
-                http_response.delete_cookie('user')
+
+                clear_session_item(request, 'user')
                 return http_response
             else:
-                return HttpResponseForbidden("Telegram Registration Failure")
+                return render(request, TgRegistrationView.template_name, { 'messages'  : ['Telegram Registration Failure. Invalid secret code.'] } )
             
     elif request.method == "POST":
         pass
@@ -93,7 +100,7 @@ class TgRegistrationView(TemplateView):
     template_name = 'telegram/tg_reg.html'
 
     def get(self, request, *args, **kwargs):
-        if request.COOKIES.get('user') is not None:
+        if request.session.get('user') is not None:
             context = self.get_context_data(**kwargs)
             response = self.render_to_response(context)
         else:
@@ -120,7 +127,7 @@ class TgAuthView(FormView):
     form_class    = TgAuthForm
 
     def get(self, request, *args, **kwargs):
-        if request.COOKIES.get('signup-login') is not None:
+        if request.session.get('signup-login') is not None:
             context = self.get_context_data(**kwargs)
             response = self.render_to_response(context)
         else:
@@ -128,7 +135,7 @@ class TgAuthView(FormView):
         return response
 
     def form_valid(self, form):
-        user       = UserProfile.objects.get(username=self.request.COOKIES.get('signup-login'))
+        user       = UserProfile.objects.get(username=self.request.session.get('signup-login'))
         form_scode = form.save()
 
         if user is None:
@@ -142,7 +149,7 @@ class TgAuthView(FormView):
         # Request to Telegram Bot
         try:
             auth_response = httpx.get(settings.TELEGRAM_BOT_URL + f"/auth_req?login={user.username}")
-        except Exception as e:
+        except Exception:
             return render(self.request, TgAuthView.template_name, { 
                 'form' : TgAuthView.form_class, 
                 'messages'  : ['Telegram Bot request timeout'] } )
@@ -155,22 +162,25 @@ class TgAuthView(FormView):
 
             # Redirect to homepage
             http_response = redirect('home')
+      
+            clear_session_item(self.request, 'signup-login')
 
         else:
-            http_response = HttpResponseForbidden("Telegram authentication failure")
+            http_response = render(self.request, TgAuthView.template_name, { 
+                'form' : TgAuthView.form_class, 
+                'messages'  : ['Telegram Authorization Failure. Invalid secret code.'] } )
         
-        http_response.delete_cookie('signup-login')
         return http_response
 
 def TgSecretCodeRequest(request):    
-    username = request.COOKIES.get('signup-login')
+    username = request.session.get('signup-login')
 
     if username is None:
         return HttpResponseForbiddenTg()
 
     try:
         response = httpx.get(settings.TELEGRAM_BOT_URL + GENCODE_REQUEST_URL, params={ 'login' : str(username) })
-    except Exception as e:
+    except Exception:
         return render(request, TgAuthView.template_name, { 'form' : TgAuthView.form_class, 'messages'  : ['Telegram Bot request timeout'] } )
 
     return \

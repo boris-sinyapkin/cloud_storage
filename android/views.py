@@ -1,8 +1,9 @@
 import json
+import httpx
 
 from django.http            import HttpResponse, HttpResponseBadRequest, HttpResponseForbidden
 from web_project.models     import UserProfile
-from django.conf            import Settings
+from django.conf            import settings
 from tg.views               import REG_REQUEST_URL
 
 def httpbody_as_json(request) -> dict:
@@ -10,7 +11,6 @@ def httpbody_as_json(request) -> dict:
 
 # Login request handler
 def AndroidLogin(request):
-
     if request.method == 'POST':
         payload = httpbody_as_json(request)
         try:
@@ -29,19 +29,33 @@ def AndroidLogin(request):
     return HttpResponseBadRequest()
 
 def AndroidVerify(request):
-    if request.method == 'POST':
-        payload = httpbody_as_json(request)
-        try:
-            login, secret_code  = payload['login'], payload['secret_code ']
-        except:
-            return HttpResponseBadRequest()
+    pass
+    # if request.method == 'POST':
+    #     payload = httpbody_as_json(request)
+    #     try:
+    #         login, secret_code  = payload['login'], payload['secret_code']
+    #     except:
+    #         return HttpResponseBadRequest()
             
-        response = httpx.get(settings.TELEGRAM_BOT_URL + REG_REQUEST_URL, 
-                  params={  'login'     : str(login), 
-                          'secret_code' : secret_code })
+    #     response = httpx.get(settings.TELEGRAM_BOT_URL + REG_REQUEST_URL, params={ 'login' : str(login), 'secret_code' : secret_code })
 
-        if json.loads(response.content.decode()).get('status') == True:
-            return HttpResponse(status=200)
-        else:
-            return HttpResponseForbidden()
+    #     if json.loads(response.content.decode()).get('status') == True:
+    #         login(self.request, user)
+    #         return HttpResponse(status=200)
+    #     else:
+    #         return HttpResponseForbidden()
 
+def AndroidFilelist(request):
+    pass
+
+def AndroidRemove(request):
+    pass
+
+def AndroidDownload(request):
+    pass
+
+def AndroidUpload(request):
+    pass
+
+def AndroidMkdir(request):
+    pass

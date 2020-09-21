@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<head>
+    <style type="text/css">
+        table {
+            border-collapse: collapse;
+            font-family: "Consolas";
+            text-align: center;
+            margin-bottom: 1em;
+            margin-top: 5em;
+        }
+        
+        h4 {
+            font-family: Consolas;
+        }
+        
+        table th {
+            background: #aaacaa;
+            text-align: center;
+        }
+        
+        .border {
+            border: 1px solid rgb(0, 0, 0);
+        }
+        
+        .buttons {
+            border: none;
+        }
+    </style>
+</head>
+
+<div class="container">
+<div class="row">
+
+<div class="container">
+    <h4 style="font-weight:bold"> Current directory: {{ cur_dir }} </h4>
+    <form action="file/previous" method="post">
+        {% csrf_token %}
+        <input type="submit" value="Previous directory">
+        <input type="hidden" name="cur_dir" value="{{ request.path }}">
+    </form>
+    <br>
+    <br>
+    <br>
+    <table align="center" width="50%">
+        <caption style="font-weight:bold"> This directory does not exist </caption>
+    </table>
+</form>
+
+
+</div>
+</div>
+</div>
+{% endblock %}

@@ -46,12 +46,12 @@ def ShowFilesHandler(request, path : str):
             else:
                 warning = None
                 if norm_path != '/' and CryptoWeb.not_exists(user.id, norm_path, ftype='d'):
-                    warning = [f"Directory {norm_path} does not exist"]
-
-                return render(request, 'fs/home.html', { 
-                    'files'     : CryptoWeb.ls(user.id, norm_path), 
-                    'cur_dir'   : norm_path,
-                    'messages'  : warning})
+                    return render(request, 'fs/not_exists.html', { 'cur_dir'   : norm_path })
+                else:
+                    return render(request, 'fs/home.html', { 
+                        'files'     : CryptoWeb.ls(user.id, norm_path), 
+                        'cur_dir'   : norm_path,
+                        'messages'  : warning})
     
     return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 

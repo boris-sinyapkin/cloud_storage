@@ -118,16 +118,15 @@ def AndroidRemove(request):
 @login_required
 def AndroidDownload(request):
     if request.method == 'POST':
-        # payload = httpbody_as_json(request)
         try:
-            # path  = normalize_path(payload['path'])
+            path  = normalize_path(request.GET['path'])
             login = request.user.username
         except Exception as e:
             return HttpResponseBadRequest(e)
 
         user = find_user_in_database(login)
         if user and user.is_authenticated:
-            return AndroidFileHandler(user, normalize_path(request.GET['path']), "download")
+            return AndroidFileHandler(user, path, "download")
         else:
             return HttpResponseForbidden()
 
@@ -140,7 +139,7 @@ def AndroidUpload(request):
         user = find_user_in_database(request.user.username)
         if user and request.FILES.get('uploaded_file') and request.GET.get('path'):
             upd_file  = request.FILES['uploaded_file']
-            path      = request.GET.get('path')
+            path      = request.GET['path']
             file_path = normalize_path( path + '/' + upd_file.name )
             CryptoWeb.upload(user.id, get_user_key(user), file_path, upd_file.read())
             return JsonResponse(status=200, data={ 'status' : 'ok'} )

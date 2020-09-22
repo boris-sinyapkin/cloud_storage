@@ -17,13 +17,21 @@ from django.contrib            import admin
 from django.urls               import path, include, re_path
 from django.views.generic.base import TemplateView
 
-from .views import ( AndroidLogin, AndroidVerify, AndroidFilelist, AndroidDownload, AndroidUpload, AndroidMkdir, AndroidSendCodeRequest, AndroidLogout)
+from .views import ( AndroidLogin, \
+                    AndroidVerify, \
+                    AndroidFilelist, \
+                    AndroidDownload, \
+                    AndroidUpload, \
+                    AndroidMkdir, \
+                    AndroidSendCodeRequest, \
+                    AndroidLogout, \
+                    AndroidRemove )
 
 urlpatterns = [
     path('login/',                            AndroidLogin),
     path('verify/',                           AndroidVerify),
     path('list/',                             AndroidFilelist),
-    path('remove/',                           AndroidFilelist),
+    path('remove/',                           AndroidRemove),
     path('download/',                         AndroidDownload),
     path('upload/',                           AndroidUpload),
     path('mkdir/',                            AndroidMkdir),

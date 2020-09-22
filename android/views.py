@@ -109,7 +109,7 @@ def AndroidRemove(request):
 
         user = find_user_in_database(login)
         if user and user.is_authenticated:
-            return AndroidFileHandler(user.id, path, "remove")
+            return AndroidFileHandler(user, path, "remove")
         else:
             return HttpResponseForbidden()
     return HttpResponseBadRequest()
@@ -149,6 +149,19 @@ def AndroidUpload(request):
 
 @login_required
 def AndroidMkdir(request):
+    if request.method == 'POST':
+        payload = httpbody_as_json(request)
+        try:
+            path  = normalize_path(payload['path'])
+            login = request.user.username
+        except Exception as e:
+            return HttpResponseBadRequest(e)
+
+        user = find_user_in_database(login)
+        if user and user.is_authenticated:
+            return AndroidFileHandler(user, path, "mkdir")
+        else:
+            return HttpResponseForbidden()
     return HttpResponseBadRequest()
 
 @login_required
@@ -169,7 +182,8 @@ def AndroidFileHandler(user : UserProfile, path, method):
             return response
 
     elif method == "mkdir":
-        pass
+        CryptoWeb.mkdir(user.id, path)
+        return JsonResponse(status=200, data={ 'status' : 'ok' } )
 
     elif method == "remove":
         CryptoWeb.remove(user.id, get_user_key(user), path)

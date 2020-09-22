@@ -135,7 +135,7 @@ def AndroidDownload(request):
 @csrf_exempt
 @login_required
 def AndroidUpload(request):
-    if request.method == 'POST':  
+    if request.method == 'POST':
         user = find_user_in_database(request.user.username)
         if user and request.FILES.get('uploaded_file') and request.GET.get('path'):
             upd_file  = request.FILES['uploaded_file']
@@ -147,6 +147,7 @@ def AndroidUpload(request):
             return HttpResponseForbidden()
     return HttpResponseBadRequest()
 
+@csrf_exempt
 @login_required
 def AndroidMkdir(request):
     if request.method == 'POST':

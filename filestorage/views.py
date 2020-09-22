@@ -5,7 +5,6 @@ from django.http                       import HttpResponse, HttpResponseForbidde
 from django.contrib.auth.decorators    import login_required
 
 from web_project.models     import UserProfile
-from django.utils.text      import slugify
 from itertools              import dropwhile
 from io                     import BytesIO
 
@@ -14,6 +13,17 @@ import json
 import os
 
 from filestorage.cryptoweb import CryptoWeb
+
+def slugify(s):
+    """
+    Overriding django slugify that allows to use russian words as well.
+    """
+    alphabet = {'а': 'a', 'б': 'b', 'в': 'v', 'г': 'g', 'д': 'd', 'е': 'e', 'ё': 'yo', 'ж': 'zh', 'з': 'z', 'и': 'i',
+            'й': 'j', 'к': 'k', 'л': 'l', 'м': 'm', 'н': 'n', 'о': 'o', 'п': 'p', 'р': 'r', 'с': 's', 'т': 't',
+            'у': 'u', 'ф': 'f', 'х': 'kh', 'ц': 'ts', 'ч': 'ch', 'ш': 'sh', 'щ': 'shch', 'ы': 'i', 'э': 'e', 'ю': 'yu',
+            'я': 'ya'}
+    
+    return ''.join(alphabet.get(w, w) for w in s.lower())
 
 def get_user_key(user : UserProfile) -> bytes:
     return str.encode(user.password)[-16:]
@@ -25,12 +35,9 @@ def get_user_object(request):
     except:
         return None
 
-def normalize_dirname(path):
-    return '/' + slugify(path)
-
 def normalize_path(path):
     path = path.replace('/filestorage', '')
-    return '/' + '/'.join([ p for p in path.split('/') if p != '' ])
+    return '/' + '/'.join([ slugify(p) for p in path.split('/') if p != '' ])
 
 @login_required
 def ShowFilesHandler(request, path : str):
@@ -82,8 +89,10 @@ def FileHandler(request, method):
                                 normalize_path(request.POST.get('filepath')))
                                 
             elif method == "previous":
-                current_dir = normalize_path( request.POST.get('cur_dir') )
-                return redirect('/filestorage' + os.path.split(current_dir)[0])
+                current_dir  = normalize_path( request.POST.get('cur_dir')   )
+                previous_dir = normalize_path( os.path.split(current_dir)[0] )
+                previous_dir += '/' if previous_dir != '/' else ''
+                return redirect('/filestorage' + previous_dir)
                 
             elif not method == 'download':
                 return HttpResponseBadRequest()

@@ -56,12 +56,6 @@ def try_to_get_current_user(request):
     else:
         return None
 
-def find_user_in_database(request):
-    try:
-        return UserProfile.objects.get(username=request.user.username) if request.user else None
-    except:
-        return None
-
 @csrf_exempt
 def TgRequestHandler(request : HttpRequest, op : str):
 
